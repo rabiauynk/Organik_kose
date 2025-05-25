@@ -31,7 +31,7 @@ public class CategoryService {
 
     public Category updateCategory(Long id, Category categoryDetails) {
         Category category = getCategoryById(id);
-        
+
         if (categoryDetails.getName() != null) {
             category.setName(categoryDetails.getName());
         }
@@ -50,7 +50,6 @@ public class CategoryService {
 
     public void deleteCategory(Long id) {
         Category category = getCategoryById(id);
-        category.setAktif(false);
-        categoryRepository.save(category);
+        categoryRepository.delete(category);
     }
 }

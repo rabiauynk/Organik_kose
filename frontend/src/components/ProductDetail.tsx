@@ -3,8 +3,9 @@ import { ArrowLeft, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { apiService, Category } from '../services/api';
 
-interface Product {
+interface ProductUI {
   id: string;
   isim: string;
   fiyat: number;
@@ -15,58 +16,105 @@ interface Product {
   kategori_id: string;
   stok: number;
   features?: string[]; // Additional UI field
+  categoryName?: string;
 }
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductUI | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addToCart } = useCart();
 
-  // Mock product data
-  const mockProduct: Product = {
-    id: id || '1',
-    isim: 'Elma Sirkesi',
-    fiyat: 45.00,
-    resim_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
-    rating: 4.9,
-    açıklama: 'Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.',
-    fullDescription: 'Geleneksel yöntemlerle üretilen 100% doğal elma sirkesi. Hiçbir kimyasal katkı maddesi kullanılmadan, organik elmalardan fermentasyon yöntemiyle elde edilmiştir. Probiyotik açısından zengin olan bu sirke, sindirim sistemini destekler ve metabolizmayı hızlandırır.',
-    kategori_id: '1', // Sirke
-    stok: 25,
-    features: [
-      '%100 Doğal ve Organik',
-      'Hiçbir Kimyasal Katkı Yok',
-      'Geleneksel Fermentasyon',
-      'Probiyotik Açısından Zengin',
-      'Cam Şişe Ambalaj',
-      '500ml'
-    ]
-  };
+  useEffect(() => {
+    const loadProductData = async () => {
+      if (!id) {
+        setError('Ürün ID bulunamadı');
+        setLoading(false);
+        return;
+      }
 
-  const categories = [
-    { id: '1', name: 'Sirke' },
-    { id: '2', name: 'Marmelat' },
-    { id: '3', name: 'Pekmez' },
-    { id: '4', name: 'Bal' }
-  ];
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Load product and categories from backend
+        const [apiProduct, apiCategories] = await Promise.all([
+          apiService.getProductById(parseInt(id)),
+          apiService.getCategories()
+        ]);
+
+        // Convert API product to UI product
+        const productUI: ProductUI = {
+          id: apiProduct.id.toString(),
+          isim: apiProduct.isim,
+          fiyat: apiProduct.fiyat,
+          resim_url: apiProduct.resimUrl || 'https://picsum.photos/400/400?random=' + apiProduct.id,
+          rating: 4.5 + Math.random() * 0.5, // Mock rating for now
+          açıklama: apiProduct.açıklama,
+          fullDescription: apiProduct.açıklama + ' Bu ürün geleneksel yöntemlerle üretilmiş olup, doğal ve organik içeriğe sahiptir.',
+          kategori_id: apiProduct.categoryId.toString(),
+          stok: apiProduct.stok,
+          categoryName: apiProduct.categoryName,
+          features: [
+            '%100 Doğal ve Organik',
+            'Hiçbir Kimyasal Katkı Yok',
+            'Geleneksel Üretim',
+            'Kalite Garantili',
+            'Hijyenik Ambalaj'
+          ]
+        };
+
+        setProduct(productUI);
+        setCategories(apiCategories);
+      } catch (error) {
+        console.error('Failed to load product:', error);
+        setError('Ürün yüklenirken hata oluştu');
+
+        // Fallback to mock data
+        const mockProduct: ProductUI = {
+          id: id || '1',
+          isim: 'Elma Sirkesi',
+          fiyat: 45.00,
+          resim_url: 'https://picsum.photos/400/400?random=1',
+          rating: 4.9,
+          açıklama: 'Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.',
+          fullDescription: 'Geleneksel yöntemlerle üretilen 100% doğal elma sirkesi. Hiçbir kimyasal katkı maddesi kullanılmadan, organik elmalardan fermentasyon yöntemiyle elde edilmiştir.',
+          kategori_id: '1',
+          stok: 25,
+          categoryName: 'Sirke',
+          features: [
+            '%100 Doğal ve Organik',
+            'Hiçbir Kimyasal Katkı Yok',
+            'Geleneksel Fermentasyon',
+            'Probiyotik Açısından Zengin',
+            'Cam Şişe Ambalaj',
+            '500ml'
+          ]
+        };
+        setProduct(mockProduct);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProductData();
+  }, [id]);
 
   const getCategoryName = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : 'Diğer';
+    const category = categories.find(cat => cat.id.toString() === categoryId);
+    return category ? category.name : product?.categoryName || 'Diğer';
   };
 
-  const images = [
-    'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop'
-  ];
-
-  useEffect(() => {
-    // In a real app, fetch product data from API
-    setProduct(mockProduct);
-  }, [id]);
+  // Generate multiple images from the main image
+  const images = product ? [
+    product.resim_url,
+    product.resim_url,
+    product.resim_url
+  ] : [];
 
   const handleAddToCart = () => {
     if (product) {
@@ -81,12 +129,30 @@ const ProductDetail = () => {
     }
   };
 
-  if (!product) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Ürün yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Ürün Bulunamadı</h2>
+          <p className="text-gray-600 mb-6">{error || 'Aradığınız ürün mevcut değil.'}</p>
+          <Link
+            to="/products"
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Ürünlere Dön
+          </Link>
         </div>
       </div>
     );
@@ -157,7 +223,7 @@ const ProductDetail = () => {
               </div>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-green-600">₺{product.fiyat}</span>
+                <span className="text-4xl font-bold text-green-600">₺{product.fiyat.toFixed(2)}</span>
                 <p className="text-gray-600 mt-2">{product.açıklama}</p>
               </div>
 

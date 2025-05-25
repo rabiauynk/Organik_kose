@@ -1,76 +1,91 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { ArrowLeft, Eye, Package, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { apiService } from '../../services/api';
 
-interface OrderDetail {
-  id: string;
-  sipariş_id: string;
-  ürün_id: string;
-  adet: number;
-  fiyat: number;
-  ürün_adı: string; // For display purposes
-}
-
-interface Order {
+interface OrderUI {
   id: string;
   kullanıcı_id: string;
   tarih: string;
   toplam_tutar: number;
   durum: 'Yeni' | 'Hazırlanıyor' | 'Kargoda' | 'Teslim Edildi' | 'İptal Edildi';
-  kullanıcı_adı: string; // For display purposes
-  kullanıcı_email: string; // For display purposes
-  detaylar: OrderDetail[];
-  adres: string; // For display purposes
+  kullanıcı_adı: string;
+  kullanıcı_email: string;
+  detaylar: any[];
+  adres: string;
 }
 
 const AdminOrders = () => {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: '1',
-      kullanıcı_id: '101',
-      kullanıcı_adı: 'Ahmet Yılmaz',
-      kullanıcı_email: 'ahmet@email.com',
-      toplam_tutar: 95.50,
-      durum: 'Hazırlanıyor',
-      tarih: '2024-01-15',
-      detaylar: [
-        { id: '101', sipariş_id: '1', ürün_id: '1', adet: 1, fiyat: 45.00, ürün_adı: 'Elma Sirkesi' },
-        { id: '102', sipariş_id: '1', ürün_id: '2', adet: 2, fiyat: 25.25, ürün_adı: 'Çilek Marmelatı' }
-      ],
-      adres: 'Kadıköy, İstanbul'
-    },
-    {
-      id: '2',
-      kullanıcı_id: '102',
-      kullanıcı_adı: 'Fatma Kaya',
-      kullanıcı_email: 'fatma@email.com',
-      toplam_tutar: 67.00,
-      durum: 'Kargoda',
-      tarih: '2024-01-15',
-      detaylar: [
-        { id: '103', sipariş_id: '2', ürün_id: '3', adet: 1, fiyat: 67.00, ürün_adı: 'Dut Pekmezi' }
-      ],
-      adres: 'Beşiktaş, İstanbul'
-    },
-    {
-      id: '3',
-      kullanıcı_id: '103',
-      kullanıcı_adı: 'Mehmet Öz',
-      kullanıcı_email: 'mehmet@email.com',
-      toplam_tutar: 156.75,
-      durum: 'Teslim Edildi',
-      tarih: '2024-01-14',
-      detaylar: [
-        { id: '104', sipariş_id: '3', ürün_id: '4', adet: 1, fiyat: 85.00, ürün_adı: 'Lavanta Balı' },
-        { id: '105', sipariş_id: '3', ürün_id: '5', adet: 1, fiyat: 55.00, ürün_adı: 'Üzüm Sirkesi' },
-        { id: '106', sipariş_id: '3', ürün_id: '6', adet: 1, fiyat: 16.75, ürün_adı: 'Kayısı Marmelatı' }
-      ],
-      adres: 'Şişli, İstanbul'
-    }
-  ]);
+  const [orders, setOrders] = useState<OrderUI[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<OrderUI | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      const apiOrders = await apiService.getAllOrders();
+
+      // Convert API orders to UI orders
+      const ordersUI: OrderUI[] = apiOrders.map(order => ({
+        id: order.id.toString(),
+        kullanıcı_id: order.userId?.toString() || '',
+        kullanıcı_adı: order.userName || 'Müşteri',
+        kullanıcı_email: order.customerEmail || '',
+        toplam_tutar: Number(order.totalAmount) || 0,
+        durum: getOrderStatusText(order.status),
+        tarih: new Date(order.orderDate).toLocaleDateString('tr-TR'),
+        detaylar: order.orderDetails || [],
+        adres: order.customerAddress || 'Adres belirtilmemiş'
+      }));
+
+      setOrders(ordersUI);
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+      // Fallback to mock data
+      setOrders([
+        {
+          id: '1',
+          kullanıcı_id: '101',
+          kullanıcı_adı: 'Ahmet Yılmaz',
+          kullanıcı_email: 'ahmet@email.com',
+          toplam_tutar: 95.50,
+          durum: 'Hazırlanıyor',
+          tarih: '2024-01-15',
+          detaylar: [],
+          adres: 'Kadıköy, İstanbul'
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Artık çeviri yapmıyoruz, direkt Türkçe status kullanıyoruz
+  const getOrderStatusText = (status: string): OrderUI['durum'] => {
+    // Geçici olarak eski İngilizce status'ları destekle
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+      case 'PROCESSING':
+        return 'Hazırlanıyor';
+      case 'SHIPPED':
+        return 'Kargoda';
+      case 'DELIVERED':
+        return 'Teslim Edildi';
+      case 'CANCELLED':
+        return 'İptal Edildi';
+      default:
+        // Eğer zaten Türkçe ise direkt döndür
+        if (['Yeni', 'Hazırlanıyor', 'Kargoda', 'Teslim Edildi', 'İptal Edildi'].includes(status)) {
+          return status as OrderUI['durum'];
+        }
+        return 'Yeni';
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,13 +104,22 @@ const AdminOrders = () => {
     }
   };
 
-  const updateOrderStatus = (orderId: string, newStatus: Order['durum']) => {
-    setOrders(orders.map(order =>
-      order.id === orderId ? { ...order, durum: newStatus } : order
-    ));
+  const updateOrderStatus = async (orderId: string, newStatus: OrderUI['durum']) => {
+    try {
+      // Artık direkt Türkçe status gönderiyoruz
+      await apiService.updateOrderStatus(orderId, newStatus);
+
+      // Update local state
+      setOrders(orders.map(order =>
+        order.id === orderId ? { ...order, durum: newStatus } : order
+      ));
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      alert('Sipariş durumu güncellenirken bir hata oluştu.');
+    }
   };
 
-  const statusOptions: Order['durum'][] = ['Yeni', 'Hazırlanıyor', 'Kargoda', 'Teslim Edildi', 'İptal Edildi'];
+  const statusOptions: OrderUI['durum'][] = ['Yeni', 'Hazırlanıyor', 'Kargoda', 'Teslim Edildi', 'İptal Edildi'];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -160,21 +184,27 @@ const AdminOrders = () => {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left py-4 px-6 font-medium text-gray-700">Sipariş ID</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-700">Müşteri</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-700">Toplam</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-700">Durum</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-700">Tarih</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-700">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-gray-500">Siparişler yükleniyor...</div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left py-4 px-6 font-medium text-gray-700">Sipariş ID</th>
+                    <th className="text-left py-4 px-6 font-medium text-gray-700">Müşteri</th>
+                    <th className="text-left py-4 px-6 font-medium text-gray-700">Toplam</th>
+                    <th className="text-left py-4 px-6 font-medium text-gray-700">Durum</th>
+                    <th className="text-left py-4 px-6 font-medium text-gray-700">Tarih</th>
+                    <th className="text-left py-4 px-6 font-medium text-gray-700">İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.length > 0 ? (
+                    orders.map((order) => (
                   <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-6 font-medium">#{order.id}</td>
                     <td className="py-4 px-6">
@@ -187,7 +217,7 @@ const AdminOrders = () => {
                     <td className="py-4 px-6">
                       <select
                         value={order.durum}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['durum'])}
+                        onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderUI['durum'])}
                         className={`px-3 py-1 rounded-full text-xs font-medium border-0 ${getStatusColor(order.durum)}`}
                       >
                         {statusOptions.map(status => (
@@ -205,11 +235,19 @@ const AdminOrders = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="py-8 px-4 text-center text-gray-500">
+                        Henüz sipariş bulunmuyor
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Order Detail Modal */}
         {selectedOrder && (
@@ -226,7 +264,7 @@ const AdminOrders = () => {
                   ✕
                 </button>
               </div>
-              
+
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -246,16 +284,20 @@ const AdminOrders = () => {
                     <p className="text-gray-600 font-semibold">Toplam: ₺{selectedOrder.toplam_tutar.toFixed(2)}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Sipariş İçeriği</h3>
                   <div className="space-y-2">
-                    {selectedOrder.detaylar.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">{item.ürün_adı} x {item.adet}</span>
-                        <span className="font-medium">₺{(item.fiyat * item.adet).toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {selectedOrder.detaylar && selectedOrder.detaylar.length > 0 ? (
+                      selectedOrder.detaylar.map((item, index) => (
+                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                          <span className="text-gray-600">{item.productName || item.ürün_adı} x {item.quantity || item.adet}</span>
+                          <span className="font-medium">₺{((item.price || item.fiyat) * (item.quantity || item.adet)).toFixed(2)}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500">Sipariş detayları yüklenemedi</p>
+                    )}
                   </div>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import { Filter, SlidersHorizontal, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
-import { Product, apiService } from '../services/api';
+import { Category, Product, apiService } from '../services/api';
 
 interface ProductUI extends Product {
   rating: number; // For UI display purposes
@@ -13,27 +13,33 @@ const ProductList = () => {
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<ProductUI[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ProductUI[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState('isim');
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
-  // Load products from API
+  // Load products and categories from API
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
-        const apiProducts = await apiService.getProducts();
+
+        // Load both products and categories
+        const [apiProducts, apiCategories] = await Promise.all([
+          apiService.getProducts(),
+          apiService.getCategories()
+        ]);
+
         // Convert API products to UI products with rating
         const productsWithRating: ProductUI[] = apiProducts.map(product => ({
           ...product,
-          id: product.id.toString(),
-          resim_url: product.resimUrl || '/placeholder.svg',
-          kategori_id: product.categoryId.toString(),
+          resim_url: product.resimUrl || `https://picsum.photos/400/400?random=${product.id}`,
           rating: 4.5 + Math.random() * 0.5 // Mock rating for now
         }));
         setProducts(productsWithRating);
+        setCategories(apiCategories);
 
         // Apply search filter from URL
         const searchQuery = searchParams.get('search');
@@ -45,50 +51,60 @@ const ProductList = () => {
 
         filterProducts(productsWithRating, categoryQuery || '', searchQuery || '');
       } catch (error) {
-        console.error('Failed to load products:', error);
+        console.error('Failed to load data:', error);
+
         // Fallback to mock data
         const mockProducts: ProductUI[] = [
           {
-            id: '1',
+            id: 1,
             isim: 'Elma Sirkesi',
             fiyat: 45.00,
             açıklama: 'Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.',
-            resimUrl: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
+            resimUrl: 'https://picsum.photos/400/400?random=1',
             stok: 25,
             aktif: true,
             categoryId: 1,
             categoryName: 'Sirke',
-            resim_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
-            kategori_id: '1',
+            resim_url: 'https://picsum.photos/400/400?random=1',
             rating: 4.9
           }
         ];
+
+        const mockCategories: Category[] = [
+          { id: 1, name: 'Sirke', description: 'Doğal sirkeler', icon: '🍎', aktif: true, createdAt: '' },
+          { id: 2, name: 'Marmelat', description: 'Ev yapımı marmelatlar', icon: '🍓', aktif: true, createdAt: '' },
+          { id: 3, name: 'Pekmez', description: 'Geleneksel pekmezler', icon: '🍇', aktif: true, createdAt: '' },
+          { id: 4, name: 'Bal', description: 'Doğal ballar', icon: '🍯', aktif: true, createdAt: '' },
+          { id: 5, name: 'Turşu', description: 'Ev yapımı turşular', icon: '🥒', aktif: true, createdAt: '' },
+          { id: 6, name: 'Reçel', description: 'Mevsim reçelleri', icon: '🫐', aktif: true, createdAt: '' }
+        ];
+
         setProducts(mockProducts);
+        setCategories(mockCategories);
         filterProducts(mockProducts, '', '');
       } finally {
         setLoading(false);
       }
     };
 
-    loadProducts();
+    loadData();
   }, [searchParams]);
 
-  // Mock categories data matching with kategori_id
-  const categories = [
-    { id: '', name: 'Tümü' },
-    { id: '1', name: 'Sirke' },
-    { id: '2', name: 'Marmelat' },
-    { id: '3', name: 'Pekmez' },
-    { id: '4', name: 'Bal' },
-    { id: '5', name: 'Turşu' },
-    { id: '6', name: 'Reçel' }
+  // Create categories list with "Tümü" option
+  const categoriesWithAll = [
+    { id: 0, name: 'Tümü', description: 'Tüm kategoriler', icon: '📦', aktif: true, createdAt: '' },
+    ...categories
   ];
 
   const filterProducts = (allProducts: ProductUI[], category: string, search: string) => {
     let filtered = allProducts;
 
-    if (category && category !== '') {
-      filtered = filtered.filter(product => product.kategori_id === category);
+    if (category && category !== '' && category !== '0') {
+      // Filter by category name (from URL) or category ID
+      filtered = filtered.filter(product =>
+        product.categoryName === category ||
+        product.categoryId.toString() === category
+      );
     }
 
     if (search) {
@@ -115,10 +131,11 @@ const ProductList = () => {
     setFilteredProducts(filtered);
   };
 
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
+  const handleCategoryChange = (categoryId: number) => {
+    const categoryIdStr = categoryId === 0 ? '' : categoryId.toString();
+    setSelectedCategory(categoryIdStr);
     const searchQuery = searchParams.get('search');
-    filterProducts(products, categoryId, searchQuery || '');
+    filterProducts(products, categoryIdStr, searchQuery || '');
   };
 
   const handleSortChange = (sort: string) => {
@@ -136,7 +153,7 @@ const ProductList = () => {
     });
   };
 
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryName = (categoryId: number) => {
     const category = categories.find(cat => cat.id === categoryId);
     return category ? category.name : 'Diğer';
   };
@@ -157,12 +174,13 @@ const ProductList = () => {
             <div className="flex items-center space-x-2 overflow-x-auto">
               <Filter className="w-5 h-5 text-gray-500 flex-shrink-0" />
               <div className="flex space-x-2">
-                {categories.map((category) => (
+                {categoriesWithAll.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => handleCategoryChange(category.id)}
                     className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                      selectedCategory === category.id || (category.id === '' && !selectedCategory)
+                      (category.id === 0 && !selectedCategory) ||
+                      selectedCategory === category.id.toString()
                         ? 'bg-green-600 text-white'
                         : 'bg-white text-gray-700 hover:bg-gray-100'
                     }`}
@@ -241,9 +259,9 @@ const ProductList = () => {
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.açıklama}</p>
 
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl font-bold text-green-600">₺{product.fiyat}</span>
+                  <span className="text-2xl font-bold text-green-600">₺{product.fiyat.toFixed(2)}</span>
                   <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {getCategoryName(product.kategori_id)}
+                    {getCategoryName(product.categoryId)}
                   </span>
                 </div>
 

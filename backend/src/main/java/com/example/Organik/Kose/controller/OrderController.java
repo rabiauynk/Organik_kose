@@ -87,10 +87,31 @@ public class OrderController {
     @PutMapping("/{id}/status")
     public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long id, @RequestBody String status) {
         try {
-            OrderDTO updatedOrder = orderService.updateOrderStatus(id, status);
+            System.out.println("Updating order " + id + " status to: " + status);
+
+            // Remove quotes if present (JSON string parsing)
+            String cleanStatus = status.replaceAll("^\"|\"$", "");
+            System.out.println("Clean status: " + cleanStatus);
+
+            OrderDTO updatedOrder = orderService.updateOrderStatus(id, cleanStatus);
+            System.out.println("Order updated successfully");
             return ResponseEntity.ok(updatedOrder);
         } catch (Exception e) {
+            System.err.println("Error updating order status: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/migrate-status")
+    public ResponseEntity<String> migrateOrderStatuses() {
+        try {
+            int updatedCount = orderService.migrateOrderStatuses();
+            return ResponseEntity.ok("Updated " + updatedCount + " orders to Turkish status");
+        } catch (Exception e) {
+            System.err.println("Error migrating order statuses: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 }

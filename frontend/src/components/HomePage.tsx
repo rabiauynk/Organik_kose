@@ -143,7 +143,7 @@ const HomePage = () => {
               <div className="bg-gradient-to-r from-green-400 to-amber-400 rounded-3xl p-8 transform rotate-3 shadow-2xl">
                 <div className="bg-white rounded-2xl p-6 transform -rotate-3">
                   <img
-                    src="https://picsum.photos/600/400?random=hero"
+                    src="https://i.pinimg.com/736x/a5/3c/ed/a53cedfb639af84da57a93e0c0a7d74f.jpg"
                     alt="Doğal ürünler"
                     className="w-full h-64 object-cover rounded-xl"
                   />
@@ -296,29 +296,6 @@ const HomePage = () => {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Newsletter */}
-      <section className="py-16 bg-gradient-to-r from-green-600 to-green-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Özel Fırsatlardan Haberdar Olun</h2>
-          <p className="text-green-100 mb-8 text-lg">
-            Yeni ürünler ve indirimlerden ilk sizin haberiniz olsun
-          </p>
-          <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="E-posta adresiniz"
-              className="flex-1 px-6 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-white"
-            />
-            <button
-              type="submit"
-              className="bg-white text-green-700 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Abone Ol
-            </button>
-          </form>
         </div>
       </section>
     </div>

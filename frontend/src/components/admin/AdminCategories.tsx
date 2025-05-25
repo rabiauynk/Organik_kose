@@ -27,15 +27,33 @@ const AdminCategories = () => {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const apiCategories = await apiService.getCategories();
-      // Convert API categories to UI categories with product count (mock for now)
+
+      // Load both categories and products to get real product counts
+      const [apiCategories, apiProducts] = await Promise.all([
+        apiService.getCategories(),
+        apiService.getProducts()
+      ]);
+
+      // Convert API categories to UI categories with real product count
       const categoriesWithCount: CategoryUI[] = apiCategories.map(category => ({
         ...category,
-        productCount: Math.floor(Math.random() * 20) + 1 // Mock product count
+        productCount: apiProducts.filter(product => product.categoryId === category.id).length
       }));
+
       setCategories(categoriesWithCount);
     } catch (error) {
       console.error('Failed to load categories:', error);
+
+      // Fallback to mock data
+      const mockCategories: CategoryUI[] = [
+        { id: 1, name: 'Sirke', description: 'Doğal sirkeler', icon: '🍎', aktif: true, createdAt: '', productCount: 4 },
+        { id: 2, name: 'Marmelat', description: 'Ev yapımı marmelatlar', icon: '🍓', aktif: true, createdAt: '', productCount: 2 },
+        { id: 3, name: 'Pekmez', description: 'Geleneksel pekmezler', icon: '🍇', aktif: true, createdAt: '', productCount: 2 },
+        { id: 4, name: 'Bal', description: 'Doğal ballar', icon: '🍯', aktif: true, createdAt: '', productCount: 1 },
+        { id: 5, name: 'Turşu', description: 'Ev yapımı turşular', icon: '🥒', aktif: true, createdAt: '', productCount: 2 },
+        { id: 6, name: 'Reçel', description: 'Mevsim reçelleri', icon: '🫐', aktif: true, createdAt: '', productCount: 1 }
+      ];
+      setCategories(mockCategories);
     } finally {
       setLoading(false);
     }

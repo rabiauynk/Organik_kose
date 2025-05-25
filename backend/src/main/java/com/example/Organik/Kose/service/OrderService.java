@@ -32,7 +32,7 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
+        order.setStatus("Hazırlanıyor");
         order.setTotalAmount(orderDTO.getTotalAmount());
 
         order = orderRepository.save(order);
@@ -106,7 +106,7 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
+        order.setStatus("Hazırlanıyor");
         order.setTotalAmount(totalAmount);
 
         order = orderRepository.save(order);
@@ -156,13 +156,65 @@ public class OrderService {
 
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, String status) {
+        System.out.println("OrderService: Updating order " + orderId + " to status: " + status);
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        System.out.println("OrderService: Found order with current status: " + order.getStatus());
 
         order.setStatus(status);
         order = orderRepository.save(order);
 
+        System.out.println("OrderService: Order saved with new status: " + order.getStatus());
+
         return convertToDTO(order);
+    }
+
+    @Transactional
+    public int migrateOrderStatuses() {
+        System.out.println("OrderService: Starting status migration...");
+
+        List<Order> allOrders = orderRepository.findAll();
+        int updatedCount = 0;
+
+        for (Order order : allOrders) {
+            String currentStatus = order.getStatus();
+            String newStatus = null;
+
+            switch (currentStatus.toUpperCase()) {
+                case "PENDING":
+                case "PROCESSING":
+                    newStatus = "Hazırlanıyor";
+                    break;
+                case "SHIPPED":
+                    newStatus = "Kargoda";
+                    break;
+                case "DELIVERED":
+                    newStatus = "Teslim Edildi";
+                    break;
+                case "CANCELLED":
+                    newStatus = "İptal Edildi";
+                    break;
+                default:
+                    // Eğer zaten Türkçe ise değiştirme
+                    if (List.of("Yeni", "Hazırlanıyor", "Kargoda", "Teslim Edildi", "İptal Edildi").contains(currentStatus)) {
+                        continue;
+                    }
+                    newStatus = "Hazırlanıyor"; // Default
+                    break;
+            }
+
+            if (newStatus != null && !newStatus.equals(currentStatus)) {
+                System.out.println("Migrating order " + order.getId() + " from '" + currentStatus + "' to '" + newStatus + "'");
+                order.setStatus(newStatus);
+                orderRepository.save(order);
+                updatedCount++;
+            }
+        }
+
+        System.out.println("OrderService: Migration completed. Updated " + updatedCount + " orders.");
+        return updatedCount;
     }
 
     private OrderDTO convertToDTO(Order order) {

@@ -141,6 +141,10 @@ class ApiService {
     return response.json();
   }
 
+  async getProductById(id: number): Promise<Product> {
+    return this.getProduct(id.toString());
+  }
+
   async searchProducts(query: string): Promise<Product[]> {
     const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`, {
       headers: this.getAuthHeaders(),
