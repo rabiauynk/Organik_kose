@@ -54,53 +54,6 @@ const HomePage = () => {
       } catch (error) {
         console.error('Failed to load homepage data:', error);
 
-        // Fallback to mock data
-        const mockFeatured: FeaturedProduct[] = [
-          {
-            id: 1,
-            name: 'Elma Sirkesi',
-            price: 45.00,
-            image: 'https://picsum.photos/400/400?random=1',
-            rating: 4.9,
-            description: 'Ev yapımı doğal elma sirkesi'
-          },
-          {
-            id: 2,
-            name: 'Çilek Marmelatı',
-            price: 35.00,
-            image: 'https://picsum.photos/400/400?random=2',
-            rating: 4.8,
-            description: 'Taze çileklerden yapılmış doğal marmelat'
-          },
-          {
-            id: 3,
-            name: 'Dut Pekmezi',
-            price: 65.00,
-            image: 'https://picsum.photos/400/400?random=3',
-            rating: 4.9,
-            description: 'Geleneksel yöntemlerle üretilmiş dut pekmezi'
-          },
-          {
-            id: 4,
-            name: 'Lavanta Balı',
-            price: 85.00,
-            image: 'https://picsum.photos/400/400?random=4',
-            rating: 5.0,
-            description: 'Saf lavanta balı, doğal ve organik'
-          }
-        ];
-
-        const mockCategories: CategoryWithCount[] = [
-          { id: 1, name: 'Sirke', description: 'Doğal sirkeler', icon: '🍎', aktif: true, createdAt: '', count: 8 },
-          { id: 2, name: 'Marmelat', description: 'Ev yapımı marmelatlar', icon: '🍓', aktif: true, createdAt: '', count: 12 },
-          { id: 3, name: 'Pekmez', description: 'Geleneksel pekmezler', icon: '🍇', aktif: true, createdAt: '', count: 6 },
-          { id: 4, name: 'Bal', description: 'Doğal ballar', icon: '🍯', aktif: true, createdAt: '', count: 10 },
-          { id: 5, name: 'Turşu', description: 'Ev yapımı turşular', icon: '🥒', aktif: true, createdAt: '', count: 15 },
-          { id: 6, name: 'Reçel', description: 'Mevsim reçelleri', icon: '🫐', aktif: true, createdAt: '', count: 9 }
-        ];
-
-        setFeaturedProducts(mockFeatured);
-        setCategories(mockCategories);
       } finally {
         setLoading(false);
       }
