@@ -24,7 +24,7 @@ public class CartService {
     @Transactional
     public void addToCart(Long userId, Long productId, Integer quantity) {
         System.out.println("CartService: Adding to cart - User ID: " + userId + ", Product ID: " + productId + ", Quantity: " + quantity);
-        
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -38,22 +38,24 @@ public class CartService {
 
         // Check stock
         if (product.getStok() < quantity) {
-            throw new RuntimeException("Insufficient stock");
+            throw new RuntimeException("Stok yetersiz. Mevcut stok: " + product.getStok());
         }
 
         // Check if item already exists in cart
         Optional<Cart> existingCartItem = cartRepository.findByUserIdAndProductId(userId, productId);
-        
+
         if (existingCartItem.isPresent()) {
             // Update quantity
             Cart cartItem = existingCartItem.get();
             int newQuantity = cartItem.getQuantity() + quantity;
-            
+
+            System.out.println("CartService: Product stock: " + product.getStok() + ", Current cart quantity: " + cartItem.getQuantity() + ", Requested quantity: " + quantity + ", New total quantity: " + newQuantity);
+
             // Check stock for new quantity
             if (product.getStok() < newQuantity) {
-                throw new RuntimeException("Insufficient stock for requested quantity");
+                throw new RuntimeException("Stok yetersiz. Sepetinizde zaten " + cartItem.getQuantity() + " adet var. Mevcut stok: " + product.getStok() + ", Toplam istenen: " + newQuantity);
             }
-            
+
             cartItem.setQuantity(newQuantity);
             cartRepository.save(cartItem);
             System.out.println("CartService: Updated existing cart item, new quantity: " + newQuantity);
@@ -84,7 +86,7 @@ public class CartService {
 
         Product product = cartItem.getProduct();
         if (product.getStok() < quantity) {
-            throw new RuntimeException("Insufficient stock");
+            throw new RuntimeException("Stok yetersiz. Mevcut stok: " + product.getStok() + ", İstenen: " + quantity);
         }
 
         cartItem.setQuantity(quantity);
@@ -95,7 +97,7 @@ public class CartService {
     public void removeFromCart(Long userId, Long productId) {
         Cart cartItem = cartRepository.findByUserIdAndProductId(userId, productId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
-        
+
         cartRepository.delete(cartItem);
     }
 

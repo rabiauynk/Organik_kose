@@ -89,15 +89,7 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
-        // Create order
-        Order order = new Order();
-        order.setUser(user);
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
-
-        order = orderRepository.save(order);
-
-        // Create order details from cart
+        // Calculate total amount first
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (Cart cartItem : cartItems) {
             Product product = cartItem.getProduct();
@@ -106,6 +98,22 @@ public class OrderService {
             if (product.getStok() < cartItem.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for product: " + product.getIsim());
             }
+
+            totalAmount = totalAmount.add(product.getFiyat().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        }
+
+        // Create order with calculated total
+        Order order = new Order();
+        order.setUser(user);
+        order.setOrderDate(LocalDateTime.now());
+        order.setStatus("PENDING");
+        order.setTotalAmount(totalAmount);
+
+        order = orderRepository.save(order);
+
+        // Create order details from cart
+        for (Cart cartItem : cartItems) {
+            Product product = cartItem.getProduct();
 
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
@@ -118,13 +126,7 @@ public class OrderService {
             // Update product stock
             product.setStok(product.getStok() - cartItem.getQuantity());
             productRepository.save(product);
-
-            totalAmount = totalAmount.add(product.getFiyat().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
-
-        // Update order total
-        order.setTotalAmount(totalAmount);
-        order = orderRepository.save(order);
 
         // Clear user's cart
         cartRepository.deleteByUserId(userId);

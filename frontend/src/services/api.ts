@@ -294,6 +294,10 @@ class ApiService {
     }
   }
 
+  async updateCartItemQuantity(productId: number, quantity: number): Promise<void> {
+    return this.updateCartItem(productId, quantity);
+  }
+
   async removeFromCart(productId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/cart/remove/${productId}`, {
       method: 'DELETE',
