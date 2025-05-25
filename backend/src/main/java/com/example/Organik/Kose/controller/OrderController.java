@@ -33,16 +33,20 @@ public class OrderController {
     }
 
     @PostMapping("/from-cart")
-    public ResponseEntity<OrderDTO> createOrderFromCart(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> createOrderFromCart(@RequestHeader("Authorization") String token) {
         try {
             String jwt = token.replace("Bearer ", "");
             String userEmail = jwtUtil.extractUsername(jwt);
             Long userId = jwtUtil.extractUserId(jwt);
 
+            System.out.println("Creating order for user: " + userEmail + " (ID: " + userId + ")");
+
             OrderDTO createdOrder = orderService.createOrderFromCart(userId);
             return ResponseEntity.ok(createdOrder);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            System.err.println("Order creation failed: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 

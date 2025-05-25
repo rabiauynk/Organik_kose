@@ -75,10 +75,16 @@ public class OrderService {
 
     @Transactional
     public OrderDTO createOrderFromCart(Long userId) {
+        System.out.println("OrderService: Creating order for userId: " + userId);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        System.out.println("OrderService: User found: " + user.getEmail());
+
         List<Cart> cartItems = cartRepository.findByUserId(userId);
+        System.out.println("OrderService: Cart items found: " + cartItems.size());
+
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
@@ -150,10 +156,10 @@ public class OrderService {
     public OrderDTO updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        
+
         order.setStatus(status);
         order = orderRepository.save(order);
-        
+
         return convertToDTO(order);
     }
 

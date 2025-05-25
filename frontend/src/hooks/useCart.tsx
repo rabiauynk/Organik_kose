@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { apiService } from '../services/api';
 
 interface CartItem {
   id: string;
@@ -34,19 +35,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('organikKoseCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product: Omit<CartItem, 'quantity'>) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevItems.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        return [...prevItems, { ...product, quantity: 1 }];
-      }
-    });
+  const addToCart = async (product: Omit<CartItem, 'quantity'>) => {
+    try {
+      console.log('Adding to cart:', product);
+
+      // Call backend API first
+      await apiService.addToCart(parseInt(product.id), 1);
+      console.log('Successfully added to backend cart');
+
+      // Update local state after successful backend call
+      setCartItems(prevItems => {
+        const existingItem = prevItems.find(item => item.id === product.id);
+        if (existingItem) {
+          return prevItems.map(item =>
+            item.id === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        } else {
+          return [...prevItems, { ...product, quantity: 1 }];
+        }
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Sepete ürün eklenirken hata oluştu: ' + error.message);
+    }
   };
 
   const removeFromCart = (productId: string) => {
@@ -65,8 +78,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const clearCart = async () => {
+    try {
+      await apiService.clearCart();
+      setCartItems([]);
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      // Still clear local cart for better UX
+      setCartItems([]);
+    }
   };
 
   const getTotalPrice = () => {

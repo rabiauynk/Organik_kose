@@ -1,27 +1,28 @@
 
+import { ArrowLeft, CreditCard, MapPin, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, MapPin, User } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
+import { apiService } from '../services/api';
 
 const Checkout = () => {
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     // Personal Info
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
-    
+
     // Address
     address: '',
     city: '',
     district: '',
     postalCode: '',
-    
+
     // Payment
     cardNumber: '',
     expiryDate: '',
@@ -40,12 +41,19 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate order processing
-    setTimeout(() => {
-      alert('Siparişiniz başarıyla alındı! Email ile onay gönderilecektir.');
-      clearCart();
+    try {
+      // Create order from cart
+      const order = await apiService.createOrderFromCart();
+
+      alert('Siparişiniz başarıyla alındı! Sipariş numaranız: ' + order.id);
+      await clearCart();
       navigate('/');
-    }, 2000);
+    } catch (error) {
+      console.error('Order creation failed:', error);
+      alert('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (cartItems.length === 0) {
@@ -92,7 +100,7 @@ const Checkout = () => {
                   <User className="w-6 h-6 text-green-600" />
                   <h2 className="text-xl font-semibold text-gray-800">Kişisel Bilgiler</h2>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Ad</label>
@@ -147,7 +155,7 @@ const Checkout = () => {
                   <MapPin className="w-6 h-6 text-green-600" />
                   <h2 className="text-xl font-semibold text-gray-800">Teslimat Adresi</h2>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Adres</label>
@@ -205,7 +213,7 @@ const Checkout = () => {
                   <CreditCard className="w-6 h-6 text-green-600" />
                   <h2 className="text-xl font-semibold text-gray-800">Ödeme Bilgileri</h2>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Kart Üzerindeki İsim</label>
@@ -264,7 +272,7 @@ const Checkout = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
                 <h2 className="text-xl font-semibold text-gray-800 mb-6">Sipariş Özeti</h2>
-                
+
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3">
@@ -277,7 +285,7 @@ const Checkout = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Ara Toplam</span>

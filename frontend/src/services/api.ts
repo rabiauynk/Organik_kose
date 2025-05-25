@@ -256,8 +256,133 @@ class ApiService {
       throw new Error('Failed to delete category');
     }
   }
+
+  // Cart endpoints
+  async addToCart(productId: number, quantity: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/cart/add`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ productId, quantity }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add to cart');
+    }
+  }
+
+  async getCartItems(): Promise<any[]> {
+    const response = await fetch(`${API_BASE_URL}/cart`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch cart items');
+    }
+
+    return response.json();
+  }
+
+  async updateCartItem(productId: number, quantity: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/cart/update`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ productId, quantity }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update cart item');
+    }
+  }
+
+  async removeFromCart(productId: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/cart/remove/${productId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to remove from cart');
+    }
+  }
+
+  async clearCart(): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/cart/clear`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to clear cart');
+    }
+  }
+
+  // Order endpoints
+  async createOrderFromCart(): Promise<Order> {
+    const response = await fetch(`${API_BASE_URL}/orders/from-cart`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create order');
+    }
+
+    return response.json();
+  }
+
+  async createOrder(order: Order): Promise<Order> {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(order),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create order');
+    }
+
+    return response.json();
+  }
+
+  async getUserOrders(): Promise<Order[]> {
+    const response = await fetch(`${API_BASE_URL}/orders/my-orders`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user orders');
+    }
+
+    return response.json();
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch orders');
+    }
+
+    return response.json();
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order> {
+    const response = await fetch(`${API_BASE_URL}/orders/${id}/status`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(status),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update order status');
+    }
+
+    return response.json();
+  }
 }
 
 export const apiService = new ApiService();
-export type { AuthResponse, Category, LoginRequest, Product, ProductDTO, RegisterRequest };
+export type { AuthResponse, Category, LoginRequest, Order, OrderDetail, Product, ProductDTO, RegisterRequest };
 
