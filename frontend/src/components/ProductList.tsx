@@ -49,16 +49,16 @@ const ProductList = () => {
         // Fallback to mock data
         const mockProducts: ProductUI[] = [
           {
-            id: 1,
+            id: '1',
             isim: 'Elma Sirkesi',
             fiyat: 45.00,
             açıklama: 'Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.',
-            resimUrl: '/placeholder.svg',
+            resimUrl: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
             stok: 25,
             aktif: true,
             categoryId: 1,
             categoryName: 'Sirke',
-            resim_url: '/placeholder.svg',
+            resim_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
             kategori_id: '1',
             rating: 4.9
           }

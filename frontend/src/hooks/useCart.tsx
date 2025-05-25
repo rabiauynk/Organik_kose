@@ -27,6 +27,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const loadCartFromBackend = async () => {
       try {
+        // Check if user is logged in
+        const token = localStorage.getItem('organikKoseToken');
+        if (!token) {
+          console.log('No token found, loading cart from localStorage');
+          const savedCart = localStorage.getItem('organikKoseCart');
+          if (savedCart) {
+            setCartItems(JSON.parse(savedCart));
+          }
+          return;
+        }
+
         const backendCartItems = await apiService.getCartItems();
         console.log('Loaded cart from backend:', backendCartItems);
 
@@ -60,6 +71,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = async (product: Omit<CartItem, 'quantity'>) => {
     try {
       console.log('Adding to cart:', product);
+
+      const token = localStorage.getItem('organikKoseToken');
+      if (!token) {
+        // If not logged in, use local storage
+        console.log('No token found, adding to localStorage cart');
+        setCartItems(prevItems => {
+          const existingItem = prevItems.find(item => item.id === product.id);
+          if (existingItem) {
+            return prevItems.map(item =>
+              item.id === product.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            );
+          } else {
+            return [...prevItems, { ...product, quantity: 1 }];
+          }
+        });
+        return;
+      }
 
       // Call backend API first
       await apiService.addToCart(parseInt(product.id), 1);

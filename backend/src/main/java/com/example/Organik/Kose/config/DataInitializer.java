@@ -62,13 +62,13 @@ public class DataInitializer implements CommandLineRunner {
             Product[] products = {
                 new Product(null, "Elma Sirkesi", new BigDecimal("45.00"),
                     "Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.",
-                    "/placeholder.svg", 25, true, LocalDateTime.now(), null, sirkeCategory, null, null),
+                    "https://picsum.photos/400/400?random=1", 25, true, LocalDateTime.now(), null, sirkeCategory, null, null),
                 new Product(null, "Çilek Marmelatı", new BigDecimal("35.00"),
                     "Taze çileklerden yapılmış doğal marmelat, şeker oranı düşük.",
-                    "/placeholder.svg", 18, true, LocalDateTime.now(), null, marmelatCategory, null, null),
+                    "https://picsum.photos/400/400?random=2", 18, true, LocalDateTime.now(), null, marmelatCategory, null, null),
                 new Product(null, "Dut Pekmezi", new BigDecimal("65.00"),
                     "Geleneksel yöntemlerle üretilmiş saf dut pekmezi.",
-                    "/placeholder.svg", 12, true, LocalDateTime.now(), null, pekmezCategory, null, null)
+                    "https://picsum.photos/400/400?random=3", 12, true, LocalDateTime.now(), null, pekmezCategory, null, null)
             };
 
             for (Product product : products) {

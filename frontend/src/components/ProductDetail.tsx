@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, Minus, Plus, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 
 interface Product {
@@ -29,7 +29,7 @@ const ProductDetail = () => {
     id: id || '1',
     isim: 'Elma Sirkesi',
     fiyat: 45.00,
-    resim_url: '/placeholder.svg',
+    resim_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
     rating: 4.9,
     açıklama: 'Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.',
     fullDescription: 'Geleneksel yöntemlerle üretilen 100% doğal elma sirkesi. Hiçbir kimyasal katkı maddesi kullanılmadan, organik elmalardan fermentasyon yöntemiyle elde edilmiştir. Probiyotik açısından zengin olan bu sirke, sindirim sistemini destekler ve metabolizmayı hızlandırır.',
@@ -58,9 +58,9 @@ const ProductDetail = () => {
   };
 
   const images = [
-    '/placeholder.svg',
-    '/placeholder.svg',
-    '/placeholder.svg'
+    'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop',
+    'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=400&fit=crop'
   ];
 
   useEffect(() => {
