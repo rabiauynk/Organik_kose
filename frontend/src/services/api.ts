@@ -52,6 +52,28 @@ interface Category {
   createdAt: string;
 }
 
+interface OrderDetail {
+  id?: number;
+  productId: number;
+  productName?: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id?: number;
+  userId?: number;
+  userName?: string;
+  orderDate?: string;
+  status?: string;
+  totalAmount: number;
+  orderDetails: OrderDetail[];
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerAddress?: string;
+}
+
 class ApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem('organikKoseToken');
