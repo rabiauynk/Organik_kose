@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
@@ -10,7 +10,6 @@ interface ProductUI {
   isim: string;
   fiyat: number;
   resim_url: string;
-  rating: number; // For UI display
   açıklama: string;
   fullDescription?: string; // Additional UI field
   kategori_id: string;
@@ -53,7 +52,6 @@ const ProductDetail = () => {
           isim: apiProduct.isim,
           fiyat: apiProduct.fiyat,
           resim_url: apiProduct.resimUrl || 'https://picsum.photos/400/400?random=' + apiProduct.id,
-          rating: 4.5 + Math.random() * 0.5, // Mock rating for now
           açıklama: apiProduct.açıklama,
           fullDescription: apiProduct.açıklama + ' Bu ürün geleneksel yöntemlerle üretilmiş olup, doğal ve organik içeriğe sahiptir.',
           kategori_id: apiProduct.categoryId.toString(),
@@ -80,7 +78,6 @@ const ProductDetail = () => {
           isim: 'Elma Sirkesi',
           fiyat: 45.00,
           resim_url: 'https://picsum.photos/400/400?random=1',
-          rating: 4.9,
           açıklama: 'Ev yapımı doğal elma sirkesi, fermentasyon ile üretilmiştir.',
           fullDescription: 'Geleneksel yöntemlerle üretilen 100% doğal elma sirkesi. Hiçbir kimyasal katkı maddesi kullanılmadan, organik elmalardan fermentasyon yöntemiyle elde edilmiştir.',
           kategori_id: '1',
@@ -204,22 +201,7 @@ const ProductDetail = () => {
                 <span className="inline-block bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full mb-2">
                   {getCategoryName(product.kategori_id)}
                 </span>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.isim}</h1>
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${
-                          i < Math.floor(product.rating)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-gray-600">({product.rating})</span>
-                </div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.isim}</h1>
               </div>
 
               <div className="mb-6">

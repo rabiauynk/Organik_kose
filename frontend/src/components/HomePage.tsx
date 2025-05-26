@@ -9,7 +9,6 @@ interface FeaturedProduct {
   name: string;
   price: number;
   image: string;
-  rating: number;
   description: string;
 }
 
@@ -39,7 +38,6 @@ const HomePage = () => {
           name: product.isim,
           price: product.fiyat,
           image: product.resimUrl || '/placeholder.svg',
-          rating: 4.5 + Math.random() * 0.5, // Mock rating for now
           description: product.açıklama
         }));
 
@@ -88,7 +86,7 @@ const HomePage = () => {
                   to="/about"
                   className="border-2 border-green-600 text-green-600 px-8 py-4 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300"
                 >
-                  Hikayemiz
+                  Hakkımızda
                 </Link>
               </div>
             </div>
@@ -218,10 +216,6 @@ const HomePage = () => {
                       alt={product.name}
                       className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                     />
-                    <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm font-medium ml-1">{product.rating.toFixed(1)}</span>
-                    </div>
                   </div>
                   <div className="p-6">
                     <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>

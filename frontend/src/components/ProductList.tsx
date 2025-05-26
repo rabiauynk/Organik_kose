@@ -1,12 +1,12 @@
 
-import { Filter, SlidersHorizontal, Star } from 'lucide-react';
+import { Filter, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { Category, Product, apiService } from '../services/api';
 
 interface ProductUI extends Product {
-  rating: number; // For UI display purposes
+  resim_url: string; // For UI display purposes
 }
 
 const ProductList = () => {
@@ -32,13 +32,12 @@ const ProductList = () => {
           apiService.getCategories()
         ]);
 
-        // Convert API products to UI products with rating
-        const productsWithRating: ProductUI[] = apiProducts.map(product => ({
+        // Convert API products to UI products
+        const productsWithImages: ProductUI[] = apiProducts.map(product => ({
           ...product,
-          resim_url: product.resimUrl || `https://picsum.photos/400/400?random=${product.id}`,
-          rating: 4.5 + Math.random() * 0.5 // Mock rating for now
+          resim_url: product.resimUrl || `https://picsum.photos/400/400?random=${product.id}`
         }));
-        setProducts(productsWithRating);
+        setProducts(productsWithImages);
         setCategories(apiCategories);
 
         // Apply search filter from URL
@@ -49,7 +48,7 @@ const ProductList = () => {
           setSelectedCategory(categoryQuery);
         }
 
-        filterProducts(productsWithRating, categoryQuery || '', searchQuery || '');
+        filterProducts(productsWithImages, categoryQuery || '', searchQuery || '');
       } catch (error) {
         console.error('Failed to load data:', error);
 
@@ -65,8 +64,7 @@ const ProductList = () => {
             aktif: true,
             categoryId: 1,
             categoryName: 'Sirke',
-            resim_url: 'https://picsum.photos/400/400?random=1',
-            rating: 4.9
+            resim_url: 'https://picsum.photos/400/400?random=1'
           }
         ];
 
@@ -121,8 +119,6 @@ const ProductList = () => {
           return a.fiyat - b.fiyat;
         case 'price-high':
           return b.fiyat - a.fiyat;
-        case 'rating':
-          return b.rating - a.rating;
         default:
           return a.isim.localeCompare(b.isim);
       }
@@ -201,7 +197,6 @@ const ProductList = () => {
                 <option value="isim">İsme Göre</option>
                 <option value="price-low">Fiyat (Düşükten Yükseğe)</option>
                 <option value="price-high">Fiyat (Yüksekten Düşüğe)</option>
-                <option value="rating">Puana Göre</option>
               </select>
 
               <button
@@ -248,10 +243,6 @@ const ProductList = () => {
                     <span className="text-white font-semibold">Stokta Yok</span>
                   </div>
                 )}
-                <div className="absolute top-3 right-3 bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center">
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-medium ml-1">{product.rating}</span>
-                </div>
               </div>
 
               <div className="p-6">

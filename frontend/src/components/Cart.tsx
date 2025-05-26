@@ -1,7 +1,6 @@
 
-import React from 'react';
+import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 
 const Cart = () => {
