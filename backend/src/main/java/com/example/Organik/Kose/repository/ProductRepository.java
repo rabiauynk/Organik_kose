@@ -1,5 +1,4 @@
 package com.example.Organik.Kose.repository;
-
 import com.example.Organik.Kose.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
