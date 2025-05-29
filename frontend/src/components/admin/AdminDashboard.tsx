@@ -27,7 +27,6 @@ const AdminDashboard = () => {
       case 'CANCELLED':
         return 'İptal Edildi';
       default:
-        // Eğer zaten Türkçe ise direkt döndür
         if (['Yeni', 'Hazırlanıyor', 'Kargoda', 'Teslim Edildi', 'İptal Edildi'].includes(status)) {
           return status;
         }
