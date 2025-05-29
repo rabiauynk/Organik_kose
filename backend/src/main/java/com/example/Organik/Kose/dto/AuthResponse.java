@@ -1,5 +1,4 @@
 package com.example.Organik.Kose.dto;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,3 +11,5 @@ public class AuthResponse {
     private String name;
     private String role;
 }
+
+

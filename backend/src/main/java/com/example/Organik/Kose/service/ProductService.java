@@ -1,5 +1,4 @@
 package com.example.Organik.Kose.service;
-
 import com.example.Organik.Kose.dto.ProductDTO;
 import com.example.Organik.Kose.model.Category;
 import com.example.Organik.Kose.model.Product;
@@ -7,7 +6,6 @@ import com.example.Organik.Kose.repository.CategoryRepository;
 import com.example.Organik.Kose.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

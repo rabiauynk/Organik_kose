@@ -1,5 +1,4 @@
 package com.example.Organik.Kose.service;
-
 import com.example.Organik.Kose.dto.OrderDTO;
 import com.example.Organik.Kose.dto.OrderDetailDTO;
 import com.example.Organik.Kose.model.*;
@@ -7,7 +6,6 @@ import com.example.Organik.Kose.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +26,6 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Create order
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
@@ -37,13 +34,11 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        // Create order details
         BigDecimal calculatedTotal = BigDecimal.ZERO;
         for (OrderDetailDTO detailDTO : orderDTO.getOrderDetails()) {
             Product product = productRepository.findById(detailDTO.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            // Check stock
             if (product.getStok() < detailDTO.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for product: " + product.getIsim());
             }
@@ -55,19 +50,14 @@ public class OrderService {
             orderDetail.setPrice(product.getFiyat());
 
             orderDetailRepository.save(orderDetail);
-
-            // Update product stock
             product.setStok(product.getStok() - detailDTO.getQuantity());
             productRepository.save(product);
 
             calculatedTotal = calculatedTotal.add(product.getFiyat().multiply(BigDecimal.valueOf(detailDTO.getQuantity())));
         }
 
-        // Update order total
         order.setTotalAmount(calculatedTotal);
         order = orderRepository.save(order);
-
-        // Clear user's cart
         cartRepository.deleteByUserId(userId);
 
         return convertToDTO(order);
@@ -89,12 +79,10 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
-        // Calculate total amount first
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (Cart cartItem : cartItems) {
             Product product = cartItem.getProduct();
 
-            // Check stock
             if (product.getStok() < cartItem.getQuantity()) {
                 throw new RuntimeException("Insufficient stock for product: " + product.getIsim());
             }
@@ -102,7 +90,6 @@ public class OrderService {
             totalAmount = totalAmount.add(product.getFiyat().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
 
-        // Create order with calculated total
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
@@ -111,7 +98,6 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
-        // Create order details from cart
         for (Cart cartItem : cartItems) {
             Product product = cartItem.getProduct();
 
@@ -127,8 +113,6 @@ public class OrderService {
             product.setStok(product.getStok() - cartItem.getQuantity());
             productRepository.save(product);
         }
-
-        // Clear user's cart
         cartRepository.deleteByUserId(userId);
 
         return convertToDTO(order);
@@ -197,7 +181,6 @@ public class OrderService {
                     newStatus = "İptal Edildi";
                     break;
                 default:
-                    // Eğer zaten Türkçe ise değiştirme
                     if (List.of("Yeni", "Hazırlanıyor", "Kargoda", "Teslim Edildi", "İptal Edildi").contains(currentStatus)) {
                         continue;
                     }

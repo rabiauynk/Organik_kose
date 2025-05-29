@@ -1,5 +1,4 @@
 package com.example.Organik.Kose.service;
-
 import com.example.Organik.Kose.dto.AuthResponse;
 import com.example.Organik.Kose.dto.LoginRequest;
 import com.example.Organik.Kose.dto.RegisterRequest;
@@ -7,7 +6,6 @@ import com.example.Organik.Kose.model.User;
 import com.example.Organik.Kose.repository.UserRepository;
 import com.example.Organik.Kose.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
